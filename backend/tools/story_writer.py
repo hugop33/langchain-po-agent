@@ -1,36 +1,63 @@
+from typing import List
+from langchain_core.tools import tool
 from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI
+from pydantic import BaseModel, Field
+
 from backend.core.config import GEMINI_API_KEY, MODEL_NAME
 
-def write_user_story(feature_description: str) -> str:
+
+class UserStory(BaseModel):
     """
-    Outil de génération de User Story au format Product Owner.
-    À utiliser lorsque tu veux transformer une description de fonctionnalité en une User Story complète avec critères d'acceptation.
-    Entrée : une chaîne de caractères décrivant la fonctionnalité à formaliser.
-    Retour : une User Story rédigée en Markdown, prête à être intégrée dans un backlog.
+    Représente une User Story complète générée pour une fonctionnalité.
     """
-    prompt = PromptTemplate(
-        template=(
-            "Tu es un Product Owner expert en rédaction de User Stories. "
-            "À partir de la description suivante, rédige une User Story complète au format Markdown, selon ce modèle :\n\n"
-            "### User Story\n"
-            "**En tant que** [type d'utilisateur], **je veux** [action] **afin de** [bénéfice].\n\n"
-            "### Critères d'Acceptation\n"
-            "* **Scénario 1:** ...\n"
-            "    * **Étant donné** ...\n"
-            "    * **Lorsque** ...\n"
-            "    * **Alors** ...\n"
-            "* **Scénario 2:** ...\n\n"
-            "Description de la fonctionnalité : {feature_description}"
-        ),
-        input_variables=["feature_description"]
-    )
+    title: str = Field(description="Titre concis de la User Story.")
+    story: str = Field(description="Description narrative de la User Story.")
+    acceptance_criteria: List[str] = Field(description="Liste des critères d'acceptation.")
+    estimated_complexity: str = Field(description="Estimation de la complexité (e.g., faible, moyen, élevé).")
+
+
+@tool
+def write_user_story_tool(feature_description: str) -> UserStory:
+    """
+    Generates a well-structured User Story, including acceptance criteria and complexity estimation, for a given feature.
+    """
+    # Initialisation du parser de sortie
+    output_parser = PydanticOutputParser(pydantic_object=UserStory)
+
+    # Initialisation du LLM
     llm = ChatGoogleGenerativeAI(
         model=MODEL_NAME,
-        google_api_key=GEMINI_API_KEY,
-        temperature=0.3
+        temperature=0.7, # Température modérée pour la créativité
+        api_key=GEMINI_API_KEY
     )
-    chain = prompt | llm
-    print("Génération de la User Story en cours...")
+
+    # Construction du prompt
+    prompt = PromptTemplate(
+        template="""
+        Vous êtes un expert en gestion de produit et en rédaction agile. À partir de la description de la fonctionnalité suivante :
+        ---
+        {feature_description}
+        ---
+        Générez une User Story complète au format JSON avec ces champs :
+        - title : un titre concis sous forme 'En tant que..., je veux..., afin de...'.
+        - story : une description narrative plus détaillée.
+        - acceptance_criteria : une liste de critères d'acceptation clairs et testables.
+        - estimated_complexity : estimation de la complexité (faible, moyen ou élevé).
+
+        Retournez la sortie strictement au format JSON conforme à ces instructions :
+        {format_instructions}
+        """,
+        input_variables=["feature_description"],
+        partial_variables={"format_instructions": output_parser.get_format_instructions()},
+    )
+
+    # Chaîne d'exécution
+    chain = prompt | llm | output_parser
+
+    # Exécution et parsing
+    print("--- Génération de la User Story ---")
     result = chain.invoke({"feature_description": feature_description})
-    return result.content 
+    print("--- User Story générée. ---")
+    return result

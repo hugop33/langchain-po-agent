@@ -1,26 +1,27 @@
-import sys
-import os
-import json
-# Ajout du répertoire racine au sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+def test_feedback_analyzer():
+    from backend.tools.feedback_analyzer import analyze_feedback_tool, GEMINI_API_KEY
+    from dotenv import load_dotenv
+    load_dotenv()
 
-from backend.tools.feedback_analyzer import analyze_feedback
+    if not GEMINI_API_KEY:
+        print("Erreur: La variable d'environnement GEMINI_API_KEY n'est pas définie.")
+    else:
+        sample_feedback = (
+            """
+            Analyse ces feedback : \"J'aimerais vraiment pouvoir exporter mes rapports de projet au format PDF.\", \"Impossible de me connecter via mon compte Google. La page se recharge sans rien faire.\", \"Je perds un temps fou à devoir recréer les mêmes types de tâches pour chaque nouveau projet.\", \"Le défilement dans la vue Kanban est très saccadé sur Firefox. Au fait, ce serait génial si on pouvait attacher des fichiers directement aux tâches.\", \"La dernière mise à jour de l'interface est magnifique ! Bravo à l'équipe.\"
+            """
+        )
+        analysis_result = analyze_feedback_tool.invoke(sample_feedback)
+        print("\n--- Résultat de l'Analyse ---")
+        if analysis_result and analysis_result.features:
+            for feature in analysis_result.features:
+                print(f"\n+ Feature Name: {feature.name}")
+                print(f"   Description: {feature.description}")
+                print(f"   Source Feedbacks:")
+                for source in feature.source_feedbacks:
+                    print(f"     - \"{source}\"")
+        else:
+            print("Aucune fonctionnalité exploitable n'a été extraite.")
 
-def run_test():
-    # Charger les feedbacks
-    feedbacks_path = os.path.join(os.path.dirname(__file__), '../backend/data/feedbacks.json')
-    with open(feedbacks_path, 'r', encoding='utf-8') as f:
-        feedbacks = json.load(f)
-    
-    # Concaténer les feedbacks avec le séparateur
-    feedbacks_str = '\n---\n'.join(feedbacks)
-    print("\nFeedbacks envoyés à analyze_feedback :\n" + feedbacks_str + "\n")
-    
-    try:
-        result = analyze_feedback(feedbacks_str)
-        print("\nRésultat structuré :\n" + json.dumps(result, indent=2, ensure_ascii=False))
-    except Exception as e:
-        print(f"\nErreur lors de l'appel à analyze_feedback : {e}")
-
-if __name__ == "__main__":
-    run_test() 
+if __name__ == '__main__':
+    test_feedback_analyzer()
