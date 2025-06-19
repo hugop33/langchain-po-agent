@@ -10,7 +10,7 @@ class FeedbackItem(BaseModel):
     summary: str = Field(description="Un résumé concis du feedback en une phrase.")
     feature_request: Optional[str] = Field(description="La description de la fonctionnalité demandée, si applicable.")
 
-class FeedbackList(RootModel[List[FeedbackItem]]):
+class FeedbackList(RootModel[List[FeedbackItem]]): # 
     pass
 
 def analyze_feedback(feedbacks_as_str: str) -> list[dict]:
@@ -20,6 +20,7 @@ def analyze_feedback(feedbacks_as_str: str) -> list[dict]:
     Entrée : une chaîne de caractères contenant plusieurs feedbacks utilisateurs (un par ligne ou séparés par un délimiteur).
     Retour : une liste de dictionnaires structurés avec type, résumé et demande de fonctionnalité éventuelle.
     """
+
     parser = PydanticOutputParser(pydantic_object=FeedbackList)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate(
@@ -31,7 +32,8 @@ def analyze_feedback(feedbacks_as_str: str) -> list[dict]:
             "Respecte scrupuleusement ce format pour chaque feedback :\n{format_instructions}"
         ),
         input_variables=["feedbacks", "format_instructions"]
-    )
+    ) 
+
     llm = ChatGoogleGenerativeAI(
         model=MODEL_NAME,
         google_api_key=GEMINI_API_KEY,
