@@ -18,8 +18,7 @@ feedback |
 | | Feature extraction | Extract feature requests from feedback |
 | **Prioritization Support** | Feature scoring | Propose feature
 scoring based on different criteria |
-| | Prioritization frameworks | Apply frameworks (MoSCoW, RICE,
-etc.) |
+| | Prioritization frameworks | Apply frameworks (MoSCoW, RICE, etc.) |
 | | Recommendation justification | Explain and justify
 prioritization recommendations |
 | **Assisted Writing** | User story generation | Generate structured
