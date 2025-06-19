@@ -1,35 +1,49 @@
-from backend.core import config  # Charge les variables d'environnement dès le début
-from backend.agent.agent_main import create_po_agent
+from typing import List
+
+from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
+
+from backend.agent.agent_main import agent, AgentState
+
+# Charge les variables d’environnement (.env)
+load_dotenv()
 
 
-def main():
-    agent = create_po_agent()
+def run_cli() -> None:
+    """Boucle REPL : envoie l’entrée utilisateur à l’agent et affiche sa réponse."""
 
-    print("\nAssistant Product Owner prêt. Posez votre question.\n")
+    print("Product‑Owner Agent CLI – Ctrl‑C pour quitter.\n")
 
-    while True:
-        try:
-            user_input = input('> ')
-            if not user_input.strip():
-                continue
+    state: AgentState = {"messages": []}  # mémoire en RAM
+    last_len = 0  # pour afficher seulement les nouveaux messages AI
 
-            # On suppose que l'agent attend un dictionnaire avec la clé 'input'
-            result = agent.invoke({"input": user_input})
+    try:
+        while True:
+            try:
+                user_input = input("\n>> ").strip()
+            except EOFError:
+                break  # Ctrl‑D
 
-            # Selon la config, la réponse peut être dans 'output' ou directement dans le résultat
-            
-            if isinstance(result, dict) and "output" in result:
-                print(result["output"])
+            if not user_input:
+                continue  # ignore lignes vides
 
-            else:
-                print(result)
+            # Ajoute le message utilisateur
+            state["messages"].append(HumanMessage(content=user_input))
 
-        except (KeyboardInterrupt, EOFError):
-            print("\nAu revoir !")
-            break
-        except Exception as e:
-            print(f"[Erreur] {e}")
+            # Appelle l’agent
+            state = agent.invoke(state)
+
+            # Affiche les nouvelles réponses AI
+            new_msgs: List[BaseMessage] = state["messages"][last_len:]
+            last_len = len(state["messages"])
+            for msg in new_msgs:
+                if isinstance(msg, AIMessage):
+                    print(msg.content)
+    except KeyboardInterrupt:
+        pass  # Ctrl‑C
+
+    print("\nSession terminée.")
 
 
 if __name__ == "__main__":
-    main()
+    run_cli()
