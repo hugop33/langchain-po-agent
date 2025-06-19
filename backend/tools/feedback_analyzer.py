@@ -15,7 +15,10 @@ class FeedbackList(RootModel[List[FeedbackItem]]):
 
 def analyze_feedback(feedbacks_as_str: str) -> list[dict]:
     """
-    Analyse une chaîne de feedbacks et retourne une liste d'objets structurés (FeedbackItem).
+    Outil d'analyse de feedbacks utilisateurs pour Product Owner.
+    À utiliser lorsque tu veux extraire automatiquement les demandes de fonctionnalités, bugs ou commentaires à partir d'une liste de feedbacks bruts (emails, tickets, etc.).
+    Entrée : une chaîne de caractères contenant plusieurs feedbacks utilisateurs (un par ligne ou séparés par un délimiteur).
+    Retour : une liste de dictionnaires structurés avec type, résumé et demande de fonctionnalité éventuelle.
     """
     parser = PydanticOutputParser(pydantic_object=FeedbackList)
     format_instructions = parser.get_format_instructions()

@@ -1,7 +1,9 @@
 def prioritize_features_RICE(features: list[dict]) -> list[dict]:
     """
-    Pour chaque feature, demande à l'utilisateur de noter Reach, Impact, Confidence (sur 10) et Effort (sur 5),
-    calcule le score RICE, enrichit la feature avec ce score, puis retourne la liste triée par score décroissant.
+    Outil de priorisation des fonctionnalités selon le framework RICE.
+    À utiliser lorsque tu veux classer objectivement des features en fonction de leur impact, portée, confiance et effort estimé.
+    Entrée : une liste de dictionnaires représentant des features (avec au moins un champ 'type' et 'summary').
+    Retour : la même liste enrichie d'un score RICE et triée par score décroissant.
     """
     feature_items = [f for f in features if f.get("type") == "feature"]
 

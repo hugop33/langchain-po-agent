@@ -4,7 +4,10 @@ from backend.core.config import GEMINI_API_KEY, MODEL_NAME
 
 def write_user_story(feature_description: str) -> str:
     """
-    Génère une User Story complète au format Markdown à partir d'une description de fonctionnalité.
+    Outil de génération de User Story au format Product Owner.
+    À utiliser lorsque tu veux transformer une description de fonctionnalité en une User Story complète avec critères d'acceptation.
+    Entrée : une chaîne de caractères décrivant la fonctionnalité à formaliser.
+    Retour : une User Story rédigée en Markdown, prête à être intégrée dans un backlog.
     """
     prompt = PromptTemplate(
         template=(
