@@ -133,9 +133,9 @@ def supervisor_step(state: AgentState) -> Dict[str, Any]:
     updates["messages"] = history
 
     # On conserve les anciens résultats s'ils existent déjà dans le state
-    # for key in ["analysis_result", "prioritization_result", "user_story"]:
-    #     if key not in updates and key in state:
-    #         updates[key] = state[key]
+    for key in ["analysis_result", "prioritization_result", "user_story"]:
+        if key not in updates and key in state:
+            updates[key] = state[key]
 
     return updates
 
