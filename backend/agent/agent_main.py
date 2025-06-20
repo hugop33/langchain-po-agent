@@ -50,7 +50,9 @@ def supervisor_step(state: AgentState) -> Dict[str, Any]:
             "  - write_user_story    – create a user story when the user asks for it.\n"
             "If the user provides several feedbacks at once, always send the full list together to the analyze_feedback tool for a global analysis.\n"
             "For each user request, determine which steps are relevant (analysis, prioritisation, user‑story writing) and call the tools in a logical order. "
-            "Output : Present the results and resume the steps taken in a clear and concise manner. "
+            "Output :"
+            "For feature prioritization, for each feature, always display the 'score' field exactly as returned by the tool (with all sub-scores and justifications), the final_score, and the justification." 
+            "Present the results and resume the steps taken in a clear and concise manner. "
             "Avoid HTML/Markdown formatting because the output will be used in a CLI application, use plain text instead."
         )
     )
@@ -131,9 +133,9 @@ def supervisor_step(state: AgentState) -> Dict[str, Any]:
     updates["messages"] = history
 
     # On conserve les anciens résultats s'ils existent déjà dans le state
-    for key in ["analysis_result", "prioritization_result", "user_story"]:
-        if key not in updates and key in state:
-            updates[key] = state[key]
+    # for key in ["analysis_result", "prioritization_result", "user_story"]:
+    #     if key not in updates and key in state:
+    #         updates[key] = state[key]
 
     return updates
 
