@@ -83,7 +83,7 @@ Le projet est développé en plusieurs étapes itératives :
 
 ## Structure de code et stack technique
 
-Le projet est organisé pour séparer clairement la logique métier, les outils, la configuration et les tests. Voici l'arborescence principale du dossier backend :
+Le projet est organisé pour séparer la logique métier, les outils, la configuration et les tests. Voici l'arborescence principale du dossier backend :
 
 ```
 backend/
