@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from backend.core.config import GEMINI_API_KEY, MODEL_NAME
 
 
+# --- Schéma de données ---
 class UserStory(BaseModel):
     """
     Représente une User Story complète générée pour une fonctionnalité.
@@ -15,25 +16,26 @@ class UserStory(BaseModel):
     title: str = Field(description="Titre concis de la User Story.")
     story: str = Field(description="Description narrative de la User Story.")
     acceptance_criteria: List[str] = Field(description="Liste des critères d'acceptation.")
-    estimated_complexity: str = Field(description="Estimation de la complexité (e.g., faible, moyen, élevé).")
+    estimated_complexity: str = Field(description="Estimation de la complexité (faible, moyen, élevé).")
 
 
+# --- Outil de génération de User Story ---
 @tool
 def write_user_story_tool(feature_description: str) -> UserStory:
     """
-    Generates a well-structured User Story, including acceptance criteria and complexity estimation, for a given feature.
+    Génère une User Story structurée, incluant les critères d'acceptation et l'estimation de complexité, à partir d'une description de fonctionnalité.
     """
-    # Initialisation du parser de sortie
+    # 1. Initialisation du parser de sortie
     output_parser = PydanticOutputParser(pydantic_object=UserStory)
 
-    # Initialisation du LLM
+    # 2. Initialisation du modèle LLM Gemini
     llm = ChatGoogleGenerativeAI(
         model=MODEL_NAME,
-        temperature=0.7, # Température modérée pour la créativité
+        temperature=0.7,  # Température modérée pour la créativité
         api_key=GEMINI_API_KEY
     )
 
-    # Construction du prompt
+    # 3. Création du prompt template
     prompt = PromptTemplate(
         template="""
         Vous êtes un expert en gestion de produit et en rédaction agile. À partir de la description de la fonctionnalité suivante :
@@ -53,11 +55,11 @@ def write_user_story_tool(feature_description: str) -> UserStory:
         partial_variables={"format_instructions": output_parser.get_format_instructions()},
     )
 
-    # Chaîne d'exécution
+    # 4. Création de la chaîne d'analyse
     chain = prompt | llm | output_parser
 
-    # Exécution et parsing
+    # 5. Lancement de la génération
     print("--- Génération de la User Story ---")
     result = chain.invoke({"feature_description": feature_description})
-    print("--- User Story générée. ---")
+    print("--- User Story générée ---")
     return result

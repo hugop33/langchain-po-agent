@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict
+from typing import List, Dict, Any
 from langchain_core.tools import tool
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
@@ -9,76 +9,87 @@ from pydantic import BaseModel, Field
 from backend.core.config import GEMINI_API_KEY, MODEL_NAME
 
 
-# --- Schémas de Données pour la Priorisation ---
+# --- Schémas de données ---
 class FeatureToPrioritize(BaseModel):
     """
-    Représente une feature candidate à prioriser.
+    Représente une fonctionnalité candidate à prioriser.
+    Optionnellement, `score_details` permet de pré-renseigner certains sous-scores RICE.
     """
-    name: str = Field(description="Titre court de la fonctionnalité.")
-    description: str = Field(description="Description détaillée de la fonctionnalité.")
+    name: str = Field(description="Titre court et explicite de la fonctionnalité.")
+    description: str = Field(description="Description détaillée du besoin utilisateur et du contexte.")
+    score_details: str | None = Field(default=None, description="Sous-scores déjà connus (ex. 'reach=60; effort=3').")
+    category: str | None = Field(default=None, description="Catégorie de la fonctionnalité : 'bug', 'feature' ou 'comment'.")
+
 
 class PrioritizedFeature(BaseModel):
     """
-    Résultat de la priorisation pour une feature.
+    Résultat de la priorisation d'une fonctionnalité, compatible avec RICE, MoSCoW ou tout autre framework.
     """
-    feature_name: str = Field(description="Le nom de la fonctionnalité priorisée.")
-    score: Dict[str, float] = Field(description="Scores détaillés selon le framework (e.g., reach, impact, confidence, effort).")
-    final_score: float = Field(description="Score agrégé pour le classement final.")
-    justification: str = Field(description="Explication de la note attribuée.")
+    feature_name: str = Field(description="Nom de la fonctionnalité priorisée.")
+    score: Dict[str, float] | None = Field(default=None, description="Dictionnaire des sous-scores numériques (reach, impact, etc.).")
+    final_score: float | None = Field(default=None, description="Score agrégé calculé par le framework, si applicable.")
+    qualitative_rank: str | None = Field(default=None, description="Label qualitatif de priorité (Must/Should/etc.).")
+    custom: Dict[str, Any] | None = Field(default=None, description="Métriques spécifiques au framework (WSJF, CoD, etc.).")
+    justification: str = Field(description="Justification détaillée du classement ou du score.")
+
 
 class PrioritizationResult(BaseModel):
     """
-    Liste des fonctionnalités avec leurs priorisations.
+    Liste des fonctionnalités avec leur priorisation.
     """
-    features: List[PrioritizedFeature] = Field(
-        description="Liste des fonctionnalités avec score détaillé et justification.",
-        default_factory=list
-    )
+    features: List[PrioritizedFeature] = Field(description="Liste des fonctionnalités priorisées.")
 
+
+# --- Outil de priorisation des fonctionnalités ---
 @tool
 def prioritize_features_tool(features: List[FeatureToPrioritize], framework: str = 'RICE') -> PrioritizationResult:
     """
-    Scores and prioritizes a list of features using a specified framework like RICE or MoSCoW.
+    Score et priorise une liste de fonctionnalités selon un framework spécifié (RICE, MoSCoW, etc.).
     """
-    # Préparation du parser de sortie
+    # 1. Initialisation du parser de sortie
     output_parser = PydanticOutputParser(pydantic_object=PrioritizationResult)
 
-    # Initialisation du LLM
+    # 2. Initialisation du modèle LLM Gemini
     llm = ChatGoogleGenerativeAI(
         model=MODEL_NAME,
         temperature=0,
         api_key=GEMINI_API_KEY
     )
 
-    # Conversion des features en JSON
+    # 3. Conversion des fonctionnalités en JSON
     features_json = json.dumps([f.model_dump() for f in features], ensure_ascii=False)
 
-    # Construction du prompt
+    # 4. Création du prompt template
     prompt = PromptTemplate(
         template="""
-        Vous êtes un assistant expert en gestion de produit. Appliquez le framework {framework} pour prioriser
-        la liste suivante de fonctionnalités (format JSON) :
+        Vous êtes un assistant expert Product Owner. Vous devez appliquer le framework **{framework}** pour prioriser les fonctionnalités. Votre tâche est de **classer et scorer** les fonctionnalités ci‑dessous selon le framework demandé.
+
+        Fonctionnalités (JSON) :
+        Les champs optionnels `score_details` contiennent parfois des valeurs déjà fournies (reach, impact, etc.). **Utilise ces valeurs telles quelles** et ne les ré‑estime pas. Complète uniquement les sous‑scores manquants.
+
+        Features :
         {features}
 
-        Pour chaque fonctionnalité, calculez et expliquez:
-        - reach (portée)
-        - impact
-        - confidence (confiance)
-        - effort
-        Puis agréegez ces sous-scores en un final_score numérique selon le framework {framework}.
+        Règles :
+        - Si le framework est RICE → remplis reach, impact, confidence, effort, final_score.
+        - Si le framework est MoSCoW → mets Must/Should/Could/Won't dans qualitative_rank et mets les champs numériques à 0.
+        - Pour tout autre framework :
+            - Renseigne qualitative_rank s'il y a un label (ex. High/Med/Low).
+            - Place n'importe quelle métrique spécifique (ex. wsjf, cost_of_delay, value_score, risk) dans custom.
+            - Laisse les champs inutilisés à null.
 
-        Retournez la sortie strictement au format JSON conforme à ces instructions :
+        Retourne strictement la sortie au format JSON suivant :
         {format_instructions}
         """,
         input_variables=["framework", "features"],
         partial_variables={"format_instructions": output_parser.get_format_instructions()},
     )
 
-    # Chaîne d'exécution
+    # 5. Création de la chaîne d'analyse
     chain = prompt | llm | output_parser
 
-    # Exécution et parsing
-    print("--- Lancement de la priorisation des features ---")
+    # 6. Lancement de la priorisation
+    print("--- Lancement de la priorisation des fonctionnalités ---")
     result = chain.invoke({"framework": framework, "features": features_json})
-    print("--- Priorisation terminée. ---")
+    print("--- Priorisation terminée ---")
     return result
