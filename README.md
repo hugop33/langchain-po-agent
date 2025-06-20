@@ -185,6 +185,33 @@ Voici les étapes pour installer et lancer l'agent Product Owner :
    python3 -m backend.main
    ```
 
-6. **Arrêter l'agent**
+6. **Changer le modèle IA (optionnel)**
+   
+   Par défaut, le modèle utilisé est **gemini-2.5-flash** (voir `backend/core/config.py`, variable `MODEL_NAME`).
+   
+   Pour utiliser un modèle plus rapide (par exemple **gemini-2.0-flash**), modifiez la ligne suivante dans `backend/core/config.py` :
+   
+   ```python
+   MODEL_NAME = "gemini-2.0-flash"
+   ```
+   
+   Cela peut être pertinent si vous privilégiez la rapidité d'exécution à la performance du modèle.
+
+7. **Arrêter l'agent**
    - Appuyer sur `Ctrl+C` dans le terminal pour arrêter proprement la session CLI.
 
+## Fonctionnalités implémentées
+
+## État d'avancement des fonctionnalités
+
+| Catégorie | Fonctionnalité attendue | État de l'implémentation et détails |
+| :--- | :--- | :--- |
+| **Analyse de feedback** | Traitement des retours clients | **Implémenté.** L'outil `analyze_feedback_tool` traite un ou plusieurs feedbacks bruts pour en extraire des demandes structurées. Il identifie le nom, la description, la catégorie (`bug`, `feature`, `comment`) et la source exacte de chaque demande. |
+| | Identification de patterns | **Implémenté.** L'outil `identify_recurrent_patterns_tool` est spécifiquement conçu pour identifier les thèmes récurrents à partir d'une liste de feedbacks. Il répond à la demande lorsque l'utilisateur le sollicite explicitement. |
+| | Extraction de fonctionnalités | **Implémenté.** La fonction principale de `analyze_feedback_tool` extrait les demandes, les catégorise et conserve une traçabilité vers le feedback source. |
+| **Aide à la priorisation** | Scoring de fonctionnalités | **Implémenté.** L'outil `prioritize_features_tool` score les fonctionnalités. Pour RICE, il détaille chaque sous-score (reach, impact, confidence, effort). Les sous-scores peuvent être fournis par l'utilisateur ou automatiquement estimés par l'outil. |
+| | Frameworks de priorisation | **Implémenté.** Le système supporte explicitement RICE et MoSCoW, et il est conçu pour être extensible à d'autres frameworks en explicitant le framework voulant être utilisé directement dans la requête. |
+| | Justification des recommandations | **Implémenté.** Pour chaque fonctionnalité priorisée, une justification détaillée est systématiquement générée, expliquant le raisonnement derrière le score ou le classement, ce qui est un point clé pour l'aide à la décision. |
+| **Rédaction assistée** | Génération de user stories | **Implémenté.** L'outil `write_user_story_tool` génère des user stories complètes, incluant un titre, une description narrative et des critères d'acceptation. |
+| | Proposition de critères d'acceptation | **Implémenté.** Fait partie intégrante de la sortie de `write_user_story_tool`, qui fournit une liste de critères clairs et testables. |
+| | Estimation de la complexité | **Implémenté.** Chaque user story générée inclut une estimation de la complexité (faible, moyen, élevé), ce qui aide le Product Owner à anticiper l'effort de développement. |
