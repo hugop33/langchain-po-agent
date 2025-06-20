@@ -26,7 +26,7 @@ class PrioritizedFeature(BaseModel):
     Résultat de la priorisation d'une fonctionnalité, compatible avec RICE, MoSCoW ou tout autre framework.
     """
     feature_name: str = Field(description="Nom de la fonctionnalité priorisée.")
-    score: Dict[str, float] | None = Field(default=None, description="Dictionnaire des sous-scores numériques (reach, impact, etc.).")
+    score: str | None = Field(default=None, description="Scores intermédiaires et justifications sous forme de texte (reach, impact, etc.).")
     final_score: float | None = Field(default=None, description="Score agrégé calculé par le framework, si applicable.")
     qualitative_rank: str | None = Field(default=None, description="Label qualitatif de priorité (Must/Should/etc.).")
     custom: Dict[str, Any] | None = Field(default=None, description="Métriques spécifiques au framework (WSJF, CoD, etc.).")
@@ -71,7 +71,8 @@ def prioritize_features_tool(features: List[FeatureToPrioritize], framework: str
         {features}
 
         Règles :
-        - Si le framework est RICE → remplis reach, impact, confidence, effort, final_score.
+        - Si le framework est RICE → dans le champ 'score', fournis une chaîne de caractères listant chaque sous-score (reach, impact, confidence, effort) suivi d'une justification textuelle pour chacun, par exemple :
+          "reach=60 : Justification du reach. impact=8 : Justification de l'impact. confidence=0.9 : Justification de la confiance. effort=3 : Justification de l'effort."
         - Si le framework est MoSCoW → mets Must/Should/Could/Won't dans qualitative_rank et mets les champs numériques à 0.
         - Pour tout autre framework :
             - Renseigne qualitative_rank s'il y a un label (ex. High/Med/Low).
