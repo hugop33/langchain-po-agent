@@ -75,10 +75,10 @@ Le projet est développé en plusieurs étapes itératives :
   * Intégration de ces outils dans **l'agent principal LangGraph**.  
   * Mise à disposition d'une interface **CLI** pour exécuter et tester l'agent.
 
-* **Étape 2 : Exposition via une API (optionnelle)**  
+* **Étape 2 : Exposition via une API (pour aller plus loin)**  
   * Encapsulation de la logique dans une API **FastAPI** afin de faciliter les intégrations futures.
 
-* **Étape 3 : Interface utilisateur (optionnelle)**  
+* **Étape 3 : Interface utilisateur (pour aller plus loin)**  
   * Création d'une UI **Streamlit** pour offrir une expérience graphique simple autour de l'agent ou de l'API.
 
 ## Structure de code et stack technique
