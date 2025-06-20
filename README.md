@@ -202,8 +202,6 @@ Voici les étapes pour installer et lancer l'agent Product Owner :
 
 ## Fonctionnalités implémentées
 
-## État d'avancement des fonctionnalités
-
 | Catégorie | Fonctionnalité attendue | État de l'implémentation et détails |
 | :--- | :--- | :--- |
 | **Analyse de feedback** | Traitement des retours clients | **Implémenté.** L'outil `analyze_feedback_tool` traite un ou plusieurs feedbacks bruts pour en extraire des demandes structurées. Il identifie le nom, la description, la catégorie (`bug`, `feature`, `comment`) et la source exacte de chaque demande. |
