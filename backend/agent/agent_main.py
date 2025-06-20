@@ -23,7 +23,7 @@ class AgentState(TypedDict, total=False):
 llm_supervisor = (
     ChatGoogleGenerativeAI(
         model=MODEL_NAME,
-        temperature=0.2,
+        temperature=0,
         api_key=GEMINI_API_KEY,
     )
     .bind_tools([
@@ -43,7 +43,12 @@ def supervisor_step(state: AgentState) -> Dict[str, Any]:
     system_msg = SystemMessage(
         content=(
             "You are a Product‑Owner assistant. "
-            "You can use four tools: analyze_feedback, identify_recurrent_patterns, prioritize_features, write_user_story. "
+            "You have four tools:\n"
+            "  - analyze_feedback   – analyse and extract structured feature requests from raw feedbacks.\n"
+            "  - identify_recurrent_patterns – detect recurring patterns ONLY if the user explicitly asks (keywords: 'pattern', 'thème récurrent', 'tendance', 'recurrence').\n"
+            "  - prioritize_features – score or rank features when the user requests prioritisation.\n"
+            "  - write_user_story    – create a user story when the user asks for it.\n"
+            "If the user provides several feedbacks at once, always send the full list together to the analyze_feedback tool for a global analysis.\n"
             "For each user request, determine which steps are relevant (analysis, prioritisation, user‑story writing) and call the tools in a logical order. "
             "Output : Present the results and resume the steps taken in a clear and concise manner. "
             "Avoid HTML/Markdown formatting because the output will be used in a CLI application, use plain text instead."
@@ -65,6 +70,7 @@ def supervisor_step(state: AgentState) -> Dict[str, Any]:
     loop_guard = 0
     while isinstance(response, AIMessage) and getattr(response, "tool_calls", None):
         loop_guard += 1
+        
         if loop_guard > 20:
             updates["error"] = "Boucle limitée à 20 itérations pour éviter une boucle infinie."
             break

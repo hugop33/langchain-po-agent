@@ -37,8 +37,9 @@ class PatternAnalysisResult(BaseModel):
 @tool
 def analyze_feedback_tool(feedback_text: str) -> AnalysisResult:
     """
-    Analyse un texte de feedback utilisateur (email, commentaire, etc.) pour identifier les thèmes récurrents
-    et extraire des demandes de fonctionnalités structurées.
+    Analyse un ou plusieurs feedbacks utilisateurs (email, commentaire, etc.) transmis ensemble, afin d'extraire toutes les demandes de fonctionnalités, bugs ou commentaires de façon structurée.
+    Utilise cet outil pour une analyse détaillée de chaque feedback, même si plusieurs feedbacks sont fournis en une seule fois.
+    Ne pas utiliser pour détecter des patterns globaux ou des tendances récurrentes : pour cela, utiliser identify_recurrent_patterns_tool.
     """
     # 1. Initialisation du parser de sortie
     output_parser = PydanticOutputParser(pydantic_object=AnalysisResult)
@@ -86,7 +87,8 @@ def analyze_feedback_tool(feedback_text: str) -> AnalysisResult:
 @tool
 def identify_recurrent_patterns_tool(feedbacks: List[str]) -> PatternAnalysisResult:
     """
-    Analyse une liste de feedbacks pour identifier les patterns ou thèmes récurrents grâce à un LLM Gemini.
+    Analyse une liste de feedbacks pour détecter uniquement les patterns, thèmes ou tendances récurrents dans l'ensemble des feedbacks.
+    N'extrait pas de demandes de fonctionnalités individuelles : utiliser cet outil seulement si l'utilisateur demande explicitement une analyse de patterns ou de tendances globales.
     """
     # 1. Initialisation du parser de sortie
     output_parser = PydanticOutputParser(pydantic_object=PatternAnalysisResult)
