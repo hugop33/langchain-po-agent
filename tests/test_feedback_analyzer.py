@@ -23,5 +23,29 @@ def test_feedback_analyzer():
         else:
             print("Aucune fonctionnalité exploitable n'a été extraite.")
 
+def test_identify_recurrent_patterns_tool():
+    from backend.tools.feedback_analyzer import identify_recurrent_patterns_tool, GEMINI_API_KEY
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    if not GEMINI_API_KEY:
+        print("Erreur: La variable d'environnement GEMINI_API_KEY n'est pas définie.")
+    else:
+        feedbacks = [
+            "J'aimerais vraiment pouvoir exporter mes rapports de projet au format PDF.",
+            "Impossible de me connecter via mon compte Google. La page se recharge sans rien faire.",
+            "Je perds un temps fou à devoir recréer les mêmes types de tâches pour chaque nouveau projet.",
+            "Le défilement dans la vue Kanban est très saccadé sur Firefox. Au fait, ce serait génial si on pouvait attacher des fichiers directement aux tâches.",
+            "La dernière mise à jour de l'interface est magnifique ! Bravo à l'équipe."
+        ]
+        patterns_result = identify_recurrent_patterns_tool.invoke({"feedbacks": feedbacks})
+        print("\n--- Patterns Récurrents Identifiés ---")
+        if patterns_result and patterns_result.patterns:
+            for pattern in patterns_result.patterns:
+                print(f"- {pattern}")
+        else:
+            print("Aucun pattern récurrent identifié.")
+
 if __name__ == '__main__':
     test_feedback_analyzer()
+    test_identify_recurrent_patterns_tool()
