@@ -147,7 +147,7 @@ backend/
 
 ### Test d'une tâche réalisable uniquement par le dernier outil (user story) avec des données brutes
 
-- J'ai besoin d'une user story pour : « Ajouter une option pour dupliquer un projet existant avec toutes ses tâches, membres et paramètres », « Permettre la personnalisation des couleurs de l'interface », « Intégrer un système de vote sur les idées de fonctionnalités », « Ajouter un export automatique des rapports chaque mois », « Permettre la connexion via SSO d'entreprise », « Afficher un tutoriel interactif à la première connexion ».
+- J'ai besoin d'une user story pour la fonctionnalité la plus importante de ces feedbacks : « Ajouter une option pour dupliquer un projet existant avec toutes ses tâches, membres et paramètres », « Permettre la personnalisation des couleurs de l'interface », « Intégrer un système de vote sur les idées de fonctionnalités », « Ajouter un export automatique des rapports chaque mois », « Permettre la connexion via SSO d'entreprise », « Afficher un tutoriel interactif à la première connexion ».
 
 ## Installation et démarrage
 
